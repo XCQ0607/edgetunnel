@@ -1,6 +1,18 @@
 // Cloudflare Worker - 结合前端优选功能和后端代理转发
 // 环境变量: UUID, KEY, DOMAIN
 
+// ==================== 配置区域 ====================
+// 在这里直接定义变量，如果环境变量存在则优先使用环境变量
+// 使用示例:
+// const DEFAULT_UUID = '12345678-1234-1234-1234-123456789abc';
+// const DEFAULT_KEY = 'mykey123';
+// const DEFAULT_DOMAIN = 'your-worker.your-subdomain.workers.dev';
+
+const DEFAULT_UUID = '2982f122-9649-40dc-bc15-fa3ec91d8921';  // 在这里填入你的UUID
+const DEFAULT_KEY = 'xcq0607';   // 在这里填入你的KEY（可选）
+const DEFAULT_DOMAIN = ''; // 在这里填入你的域名
+// ================================================
+
 import { connect } from 'cloudflare:sockets';
 
 // 全局变量
@@ -10,7 +22,7 @@ let domain = '';
 let apiData = [];
 let lastUpdateTime = '';
 
-// 从original.js借用的核心函数
+
 const expire = 4102329600; // 2099-12-31
 let noTLS = 'false';
 let path = '/?ed=2560';
@@ -19,13 +31,20 @@ let allowInsecure = '&allowInsecure=1';
 export default {
     async fetch(request, env, ctx) {
         try {
-            // 初始化环境变量
-            userID = env.UUID || '';
-            accessKey = env.KEY || '';
-            domain = env.DOMAIN || '';
+            // 初始化环境变量，优先使用环境变量，否则使用默认值
+            userID = env.UUID || DEFAULT_UUID;
+            accessKey = env.KEY || DEFAULT_KEY;
+            domain = env.DOMAIN || DEFAULT_DOMAIN;
 
             if (!userID) {
-                return new Response('请设置UUID环境变量', {
+                return new Response('请设置UUID环境变量或在代码中定义DEFAULT_UUID', {
+                    status: 404,
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }
+                });
+            }
+
+            if (!domain) {
+                return new Response('请设置DOMAIN环境变量或在代码中定义DEFAULT_DOMAIN', {
                     status: 404,
                     headers: { "Content-Type": "text/plain;charset=utf-8" }
                 });
